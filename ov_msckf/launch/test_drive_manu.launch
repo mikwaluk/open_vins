@@ -2,7 +2,7 @@
 
     <!-- imu starting thresholds -->
     <arg name="init_window_time"  default="0.75" />
-    <arg name="init_imu_thresh"   default="0.12" />
+    <arg name="init_imu_thresh"   default="0.2" />
 
     <!-- saving trajectory path and timing information -->
     <arg name="dosave"      default="true" />
@@ -18,8 +18,8 @@
     <node name="run_subscribe_msckf" pkg="ov_msckf" type="run_subscribe_msckf" output="screen" clear_params="true" required="true">
 
         <!-- bag topics -->
-        <param name="topic_imu"      type="string" value="/imu/data_raw" />
-        <param name="topic_camera0"  type="string" value="/stereo/left/image_raw" />
+        <param name="topic_imu"      type="string" value="/imu" />
+        <param name="topic_camera0"  type="string" value="/cam0/image_raw" />
         <param name="topic_camera1"  type="string" value="/stereo/right/image_raw" />
 
         <!-- world/filter parameters -->
@@ -27,11 +27,11 @@
         <param name="use_imuavg"             type="bool"   value="true" />
         <param name="use_rk4int"             type="bool"   value="true" />
         <param name="use_stereo"             type="bool"   value="true" />
-        <param name="calib_cam_extrinsics"   type="bool"   value="true" />
+        <param name="calib_cam_extrinsics"   type="bool"   value="false" />
         <param name="calib_cam_intrinsics"   type="bool"   value="true" />
         <param name="calib_cam_timeoffset"   type="bool"   value="true" />
-        <param name="calib_camimu_dt"        type="double" value="0.0" />
-        <param name="max_clones"             type="int"    value="20" />
+        <param name="calib_camimu_dt"        type="double" value="0.06" />
+        <param name="max_clones"             type="int"    value="25" />
         <param name="max_slam"               type="int"    value="75" />
         <param name="max_slam_in_update"     type="int"    value="25" /> <!-- 25 seems to work well -->
         <param name="max_msckf_in_update"    type="int"    value="50" />
@@ -39,7 +39,7 @@
         <param name="dt_slam_delay"          type="double" value="3" />
         <param name="init_window_time"       type="double" value="$(arg init_window_time)" />
         <param name="init_imu_thresh"        type="double" value="$(arg init_imu_thresh)" />
-        <param name="gravity_mag"            type="double" value="9.79858" /> <!-- 9.79858 -->
+        <param name="gravity_mag"            type="double" value="9.81" /> <!-- 9.79858 -->
         <param name="feat_rep_msckf"         type="string" value="ANCHORED_MSCKF_INVERSE_DEPTH" />
         <param name="feat_rep_slam"          type="string" value="ANCHORED_MSCKF_INVERSE_DEPTH" />
         <param name="feat_rep_aruco"         type="string" value="ANCHORED_MSCKF_INVERSE_DEPTH" />
@@ -59,7 +59,7 @@
 
         <!-- tracker/extractor properties -->
         <param name="use_klt"            type="bool"   value="true" />
-        <param name="num_pts"            type="int"    value="300" />
+        <param name="num_pts"            type="int"    value="400" />
         <param name="fast_threshold"     type="int"    value="10" />
         <param name="grid_x"             type="int"    value="9" />
         <param name="grid_y"             type="int"    value="5" />
@@ -88,30 +88,31 @@
         <param name="up_aruco_chi2_multipler"      type="double"   value="1" />
         <!-- MTI-100 series converted from data sheet, guess on bias random walk -->
         <!-- https://www.xsens.com/hubfs/Downloads/usermanual/MTi_usermanual.pdf -->
-        <param name="gyroscope_noise_density"      type="double"   value="1.7453e-04" /> <!-- 1.7453e-04 -->
-        <param name="gyroscope_random_walk"        type="double"   value="1.0000e-05" />
-        <param name="accelerometer_noise_density"  type="double"   value="5.8860e-03" /> <!-- 5.8860e-04 -->
-        <param name="accelerometer_random_walk"    type="double"   value="1.0000e-04" />
+        <param name="gyroscope_noise_density"      type="double"   value="4.0e-04" /> <!-- 1.7453e-04 -->
+        <param name="gyroscope_random_walk"        type="double"   value="2.0e-05" />
+        <param name="accelerometer_noise_density"  type="double"   value="2.0e-02" /> <!-- 5.8860e-04 -->
+        <param name="accelerometer_random_walk"    type="double"   value="2.0000e-03" />
 
 
         <!-- camera intrinsics -->
-        <rosparam param="cam0_wh">[1280, 560]</rosparam>
+        <rosparam param="cam0_wh">[640, 480]</rosparam>
         <rosparam param="cam1_wh">[1280, 560]</rosparam>
         <param name="cam0_is_fisheye" type="bool" value="false" />
         <param name="cam1_is_fisheye" type="bool" value="false" />
-        <rosparam param="cam0_k">[8.1690378992770002e+02,8.1156803828490001e+02,6.0850726281690004e+02,2.6347599764440002e+02]</rosparam>
-        <rosparam param="cam0_d">[-5.6143027800000002e-02,1.3952563200000001e-01,-1.2155906999999999e-03,-9.7281389999999998e-04]</rosparam>
+        <rosparam param="cam0_k">[485.10643249762376, 487.60689823108476,333.09659108597447, 256.6414555025254]</rosparam>
+        <rosparam param="cam0_d">[0.020243835467418536, 0.03559910904879722, 0.012221374439557255, 0.009914583484121258]</rosparam>
         <rosparam param="cam1_k">[8.1378205539589999e+02,8.0852165574269998e+02,6.1386419539320002e+02,2.4941049348650000e+02]</rosparam>
         <rosparam param="cam1_d">[-5.4921981799999998e-02,1.4243657430000001e-01,7.5412299999999996e-05,-6.7560530000000001e-04]</rosparam>
 
         <!-- camera extrinsics -->
         <rosparam param="T_C0toI">
         [
-        -0.00413,-0.01966,0.99980,1.73944,
-        -0.99993,-0.01095,-0.00435,0.27803,
-        0.01103,-0.99975,-0.01962,-0.08785,
-        0.00000,0.00000,0.00000,1.00000
-        ]
+        0.00568737, -0.9998657,  -0.01536999,  0.00001237,
+       -0.99963364, -0.00527797, -0.02654654,  0.0000833,
+        0.02646186,  0.01551534, -0.99952941, -0.00001108,
+        0.,          0.,          0.,          1.,        ]
+
+        
         </rosparam>
         <rosparam param="T_C1toI">
         [
